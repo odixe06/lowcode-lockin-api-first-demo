@@ -1,0 +1,201 @@
+[
+  {
+    "id": "tab-api",
+    "type": "tab",
+    "label": "API first demo",
+    "disabled": false,
+    "info": "Thin UI. Business rules and storage remain in external Python API."
+  },
+  {
+    "id": "form-in",
+    "type": "http in",
+    "z": "tab-api",
+    "x": 140,
+    "y": 80,
+    "name": "UI A",
+    "url": "/demo",
+    "method": "get",
+    "upload": false,
+    "wires": [
+      [
+        "form-html"
+      ]
+    ]
+  },
+  {
+    "id": "form-html",
+    "type": "template",
+    "z": "tab-api",
+    "x": 380,
+    "y": 80,
+    "name": "Editable HTML template",
+    "field": "payload",
+    "fieldType": "msg",
+    "format": "handlebars",
+    "syntax": "mustache",
+    "template": "<!doctype html><html lang=\"vi\"><meta charset=\"utf-8\"><title>Yêu cầu hỗ trợ</title>\n<style>body{font:20px system-ui;max-width:850px;margin:60px auto;padding:20px;color:#243746;background:#f7f4ee}button,input{font:inherit;padding:10px}input{width:60%}li{margin:16px 0}code{font-size:14px}</style>\n<h1>UI A low code: yêu cầu hỗ trợ</h1><p>Giao diện thay thế gọi cùng API. Dữ liệu và nghiệp vụ nằm ngoài Node-RED.</p>\n<form id=\"form\"><input id=\"title\" required maxlength=\"120\" placeholder=\"Nội dung yêu cầu\"><button>Tạo yêu cầu</button></form>\n<p id=\"message\" role=\"status\"></p><button id=\"reload\">Tải lại</button><ul id=\"list\"></ul><a href=\"/proxy/tickets\">Xuất JSON</a>\n<script>\nconst list=document.getElementById('list'), message=document.getElementById('message');\nasync function refresh(){const r=await fetch('/proxy/tickets');const data=await r.json();list.replaceChildren();for(const t of data){const li=document.createElement('li');li.textContent=t.title+' • '+t.status+' • '+t.id;list.append(li);}}\ndocument.getElementById('form').onsubmit=async e=>{e.preventDefault();try{const r=await fetch('/proxy/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:document.getElementById('title').value})});const data=await r.json();message.textContent=r.ok?'Đã tạo '+data.id:data.error;if(r.ok){e.target.reset();await refresh();}}catch(err){message.textContent='Không kết nối được API';}};\ndocument.getElementById('reload').onclick=()=>refresh().catch(()=>message.textContent='Không kết nối được API');refresh().catch(()=>message.textContent='Không kết nối được API');\n</script></html>",
+    "output": "str",
+    "wires": [
+      [
+        "form-out"
+      ]
+    ]
+  },
+  {
+    "id": "form-out",
+    "type": "http response",
+    "z": "tab-api",
+    "x": 640,
+    "y": 80,
+    "name": "HTML",
+    "statusCode": "",
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "wires": []
+  },
+  {
+    "id": "get-in",
+    "type": "http in",
+    "z": "tab-api",
+    "x": 130,
+    "y": 200,
+    "name": "GET proxy",
+    "url": "/proxy/tickets",
+    "method": "get",
+    "upload": false,
+    "wires": [
+      [
+        "get-url"
+      ]
+    ]
+  },
+  {
+    "id": "get-url",
+    "type": "function",
+    "z": "tab-api",
+    "x": 350,
+    "y": 200,
+    "name": "External API address",
+    "func": "msg.url = (env.get('API_URL') || 'http://127.0.0.1:8000') + '/tickets';\nmsg.headers = {'content-type':'application/json'};\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "wires": [
+      [
+        "get-api"
+      ]
+    ]
+  },
+  {
+    "id": "get-api",
+    "type": "http request",
+    "z": "tab-api",
+    "x": 580,
+    "y": 200,
+    "name": "Independent API",
+    "method": "GET",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "wires": [
+      [
+        "get-out"
+      ]
+    ]
+  },
+  {
+    "id": "get-out",
+    "type": "http response",
+    "z": "tab-api",
+    "x": 800,
+    "y": 200,
+    "name": "API response",
+    "statusCode": "",
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "wires": []
+  },
+  {
+    "id": "post-in",
+    "type": "http in",
+    "z": "tab-api",
+    "x": 130,
+    "y": 330,
+    "name": "POST proxy",
+    "url": "/proxy/tickets",
+    "method": "post",
+    "upload": false,
+    "wires": [
+      [
+        "post-url"
+      ]
+    ]
+  },
+  {
+    "id": "post-url",
+    "type": "function",
+    "z": "tab-api",
+    "x": 350,
+    "y": 330,
+    "name": "External API address",
+    "func": "msg.url = (env.get('API_URL') || 'http://127.0.0.1:8000') + '/tickets';\nmsg.headers = {'content-type':'application/json'};\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "wires": [
+      [
+        "post-api"
+      ]
+    ]
+  },
+  {
+    "id": "post-api",
+    "type": "http request",
+    "z": "tab-api",
+    "x": 580,
+    "y": 330,
+    "name": "Independent API",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "wires": [
+      [
+        "post-out"
+      ]
+    ]
+  },
+  {
+    "id": "post-out",
+    "type": "http response",
+    "z": "tab-api",
+    "x": 800,
+    "y": 330,
+    "name": "API response",
+    "statusCode": "",
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "wires": []
+  }
+]

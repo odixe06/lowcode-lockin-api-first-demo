@@ -1,0 +1,11 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><title>Yêu cầu hỗ trợ</title>
+<style>body{font:20px system-ui;max-width:850px;margin:60px auto;padding:20px;color:#243746;background:#f7f4ee}button,input{font:inherit;padding:10px}input{width:60%}li{margin:16px 0}code{font-size:14px}</style>
+<h1>UI B: yêu cầu hỗ trợ</h1><p>Giao diện thay thế gọi cùng API. Dữ liệu và nghiệp vụ nằm ngoài Node-RED.</p>
+<form id="form"><input id="title" required maxlength="120" placeholder="Nội dung yêu cầu"><button>Tạo yêu cầu</button></form>
+<p id="message" role="status"></p><button id="reload">Tải lại</button><ul id="list"></ul><a href="/export">Xuất JSON</a>
+<script>
+const list=document.getElementById('list'), message=document.getElementById('message');
+async function refresh(){const r=await fetch('/tickets');const data=await r.json();list.replaceChildren();for(const t of data){const li=document.createElement('li');li.textContent=t.title+' • '+t.status+' • '+t.id;list.append(li);}}
+document.getElementById('form').onsubmit=async e=>{e.preventDefault();try{const r=await fetch('/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:document.getElementById('title').value})});const data=await r.json();message.textContent=r.ok?'Đã tạo '+data.id:data.error;if(r.ok){e.target.reset();await refresh();}}catch(err){message.textContent='Không kết nối được API';}};
+document.getElementById('reload').onclick=()=>refresh().catch(()=>message.textContent='Không kết nối được API');refresh().catch(()=>message.textContent='Không kết nối được API');
+</script></html>

@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["ticket_data:/app/data"]
+  ui_a:
+    image: nodered/node-red:4.1.0
+    ports: ["127.0.0.1:1880:1880"]
+    environment:
+      API_URL: http://api:8000
+    volumes:
+      - ./nodered/flows.json:/flows.json:ro
+      - ./nodered/settings.js:/data/settings.js:ro
+    depends_on: [api]
+volumes:
+  ticket_data:
